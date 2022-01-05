@@ -2,7 +2,7 @@ name: Generate RULE-SET for Premium Edition of Clash
 on:
   workflow_dispatch:
   schedule:
-    - cron: "30 22 * * *"
+    - cron: "0 16 * * *"
   push:
     branches:
       - master
@@ -31,84 +31,67 @@ jobs:
           echo "telegram_cidr=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/telegram.txt" >> $GITHUB_ENV
         shell: bash
 
-      - name: Checkout the "hidden" branch
-        uses: actions/checkout@v2
-        with:
-          ref: hidden
-
       - name: Generate icloud.txt file
         run: |
           echo "payload:" > icloud.txt
           curl -sSL ${custom_icloud} | grep -E "^(full|domain):" | awk -F ':' '{printf "  - |+.%s|\n", $2}' | sed "s/|/'/g" >> icloud.txt
-
       - name: Generate google.txt file
         run: |
           echo "payload:" > google.txt
           curl -sSL ${felixonmars_google} | perl -ne '/^server=\/([^\/]+)\// && print "  - |+.$1|\n"' | sed "s/|/'/g" >> google.txt
-
       - name: Generate apple.txt file
         run: |
           echo "payload:" > apple.txt
           curl -sSL ${felixonmars_apple} | perl -ne '/^server=\/([^\/]+)\// && print "  - |+.$1|\n"' | sed "s/|/'/g" >> apple.txt
-
       - name: Generate private.txt file
         run: |
           echo "payload:" > private.txt
           curl -sSL ${custom_private} | awk -F ':' '/^full:/ {printf "  - |%s|\n", $2}' | sed "s/|/'/g" >> private.txt
           curl -sSL ${custom_private} | awk -F ':' '/^domain:/ {printf "  - |+.%s|\n", $2}' | sed "s/|/'/g" >> private.txt
-
       - name: Generate direct.txt file
         run: |
           echo "payload:" > direct.txt
           curl -sSL ${Loyalsoldier_direct} | grep -Ev "^(regexp|keyword):" | perl -ne '/^(full:)([-_a-zA-Z0-9]+(\.[-_a-zA-Z0-9]+)*)/ && print "  - |$2|\n"' | sed "s/|/'/g" >> direct.txt
           curl -sSL ${Loyalsoldier_direct} | grep -Ev "^(regexp|keyword|full):" | perl -ne '/^(domain:)?([-_a-zA-Z0-9]+(\.[-_a-zA-Z0-9]+)*)/ && print "  - |+.$2|\n"' | sed "s/|/'/g" >> direct.txt
-
       - name: Generate proxy.txt file
         run: |
           echo "payload:" > proxy.txt
           curl -sSL ${Loyalsoldier_proxy} | grep -Ev "^(regexp|keyword):" | perl -ne '/^(full:)([-_a-zA-Z0-9]+(\.[-_a-zA-Z0-9]+)*)/ && print "  - |$2|\n"' | sed "s/|/'/g" >> proxy.txt
           curl -sSL ${Loyalsoldier_proxy} | grep -Ev "^(regexp|keyword|full):" | perl -ne '/^(domain:)?([-_a-zA-Z0-9]+(\.[-_a-zA-Z0-9]+)*)/ && print "  - |+.$2|\n"' | sed "s/|/'/g" >> proxy.txt
-
       - name: Generate reject.txt file
         run: |
           echo "payload:" > reject.txt
           curl -sSL ${Loyalsoldier_reject} | grep -Ev "^(regexp|keyword):" | perl -ne '/^(domain:|full:)?([-_a-zA-Z0-9]+(\.[-_a-zA-Z0-9]+)*)/ && print "  - |+.$2|\n"' | sed "s/|/'/g" >> reject.txt
-
+          cp reject.txt reject.yaml
       - name: Generate gfw.txt file
         run: |
           echo "payload:" > gfw.txt
           curl -sSL ${Loyalsoldier_gfw} | grep -Ev "^(regexp|keyword):" | perl -ne '/^(domain:|full:)?([-_a-zA-Z0-9]+(\.[-_a-zA-Z0-9]+)*)/ && print "  - |+.$2|\n"' | sed "s/|/'/g" >> gfw.txt
-
       - name: Generate greatfire.txt file
         run: |
           echo "payload:" > greatfire.txt
           curl -sSL ${Loyalsoldier_greatfire} | grep -Ev "^(regexp|keyword):" | perl -ne '/^(domain:|full:)?([-_a-zA-Z0-9]+(\.[-_a-zA-Z0-9]+)*)/ && print "  - |+.$2|\n"' | sed "s/|/'/g" >> greatfire.txt
-
       - name: Generate tld-not-cn.txt file
         run: |
           echo "payload:" > tld-not-cn.txt
           curl -sSL "${custom_tld_not_cn}" | perl -ne '/^domain:([-_a-zA-Z0-9]+(\.[-_a-zA-Z0-9]+)*)/ && print "  - |+.$1|\n"' | sed "s/|/'/g" >> tld-not-cn.txt
-
       - name: Generate cncidr.txt file
         run: |
           echo "payload:" > cncidr.txt
           curl -sSL ${cn_cidr} | perl -ne '/(.+\/\d+)/ && print "  - |$1|\n"' | sed "s/|/'/g" >> cncidr.txt
-
       - name: Generate telegramcidr.txt file
         run: |
           echo "payload:" > telegramcidr.txt
           curl -sSL ${telegram_cidr} | perl -ne '/(.+\/\d+)/ && print "  - |$1|\n"' | sed "s/|/'/g" >> telegramcidr.txt
-
       - name: Generate lancidr.txt file
         run: |
           echo "payload:" > lancidr.txt
           curl -sSL ${lan_cidr} | perl -ne '/(.+\/\d+)/ && print "  - |$1|\n"' | sed "s/|/'/g" >> lancidr.txt
-
       - name: Move files to publish directory
         run: |
           mkdir -p publish
           cp *.txt ./publish/
-
+          cp reject.yaml ./publish/
       - name: Release and upload assets
         uses: softprops/action-gh-release@v0.1.6
         with:
@@ -119,7 +102,7 @@ jobs:
           files: |
             ./publish/*
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
 
       - name: Git push assets to "release" branch
         run: |
@@ -130,9 +113,8 @@ jobs:
           git checkout -b release
           git add .
           git commit -m "${{ env.RELEASE_NAME }}"
-          git remote add origin "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
+          git remote add origin "https://${{ github.actor }}:${{ secrets.GIT_TOKEN }}@github.com/${{ github.repository }}"
           git push -f origin release
-
       - name: Purge jsdelivr CDN
         run: |
           cd publish || exit 1
