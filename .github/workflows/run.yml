@@ -2,7 +2,7 @@ name: Generate RULE-SET for Premium Edition of Clash
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 16 * * *"
+    - cron: "0 23 * * *"
   push:
     branches:
       - master
