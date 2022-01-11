@@ -29,6 +29,7 @@ jobs:
           echo "cn_cidr=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/cn.txt" >> $GITHUB_ENV
           echo "lan_cidr=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/private.txt" >> $GITHUB_ENV
           echo "telegram_cidr=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/telegram.txt" >> $GITHUB_ENV
+          echo "emby_cidr=https://i.ihzzz.com:25501/embyip.txt" >> $GITHUB_ENV
         shell: bash
 
       - name: Generate icloud.txt file
@@ -88,6 +89,10 @@ jobs:
         run: |
           echo "payload:" > telegramcidr.txt
           curl -sSL ${telegram_cidr} | perl -ne '/(.+\/\d+)/ && print "  - |$1|\n"' | sed "s/|/'/g" >> telegramcidr.txt
+      - name: Generate embycidr.txt file
+        run: |
+          echo "payload:" > embycidr.txt
+          curl -sSL ${emby_cidr} | perl -ne '/(.+\/\d+)/ && print "  - |$1|\n"' | sed "s/|/'/g" >> embycidr.txt
       - name: Generate lancidr.txt file
         run: |
           echo "payload:" > lancidr.txt
