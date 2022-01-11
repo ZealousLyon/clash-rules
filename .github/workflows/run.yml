@@ -29,7 +29,7 @@ jobs:
           echo "cn_cidr=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/cn.txt" >> $GITHUB_ENV
           echo "lan_cidr=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/private.txt" >> $GITHUB_ENV
           echo "telegram_cidr=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/telegram.txt" >> $GITHUB_ENV
-          echo "emby_cidr=https://i.ihzzz.com:25501/embyip.txt" >> $GITHUB_ENV
+          echo "emby_cidr=https://sub.ihzzz.com/embyip.txt" >> $GITHUB_ENV
         shell: bash
 
       - name: Generate icloud.txt file
