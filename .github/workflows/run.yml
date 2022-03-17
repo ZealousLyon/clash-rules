@@ -30,6 +30,7 @@ jobs:
           echo "lan_cidr=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/private.txt" >> $GITHUB_ENV
           echo "telegram_cidr=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/telegram.txt" >> $GITHUB_ENV
           echo "emby_cidr=https://sub.ihzzz.com/embyip.txt" >> $GITHUB_ENV
+          echo "whitelist=https://raw.githubusercontent.com/privacy-protection-tools/dead-horse/master/anti-ad-white-list.txt" >> $GITHUB_ENV
         shell: bash
 
       - name: Generate icloud.txt file
@@ -89,6 +90,11 @@ jobs:
         run: |
           echo "payload:" > telegramcidr.txt
           curl -sSL ${telegram_cidr} | perl -ne '/(.+\/\d+)/ && print "  - |$1|\n"' | sed "s/|/'/g" >> telegramcidr.txt
+      - name: Generate whitelist.txt file
+        run: |
+          echo "payload:" > whitelist.txt
+          curl -sSL ${whitelist} | grep -Ev "^(regexp|keyword):" | perl -ne '/^(domain:|full:)?([-_a-zA-Z0-9]+(\.[-_a-zA-Z0-9]+)*)/ && print "  - |+.$2|\n"' | sed "s/|/'/g" >> whitelist.txt
+          cp whitelist.txt whitelist.yaml
       - name: Generate embycidr.txt file
         run: |
           echo "payload:" > embycidr.txt
