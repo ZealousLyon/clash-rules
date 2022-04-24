@@ -81,6 +81,7 @@ jobs:
         run: |
           echo "payload:" > tld-not-cn.txt
           curl -sSL "${custom_tld_not_cn}" | perl -ne '/^domain:([-_a-zA-Z0-9]+(\.[-_a-zA-Z0-9]+)*)/ && print "  - |+.$1|\n"' | sed "s/|/'/g" >> tld-not-cn.txt
+          cp tld-not-cn.txt tld-not-cn.yaml
       - name: Generate cncidr.txt file
         run: |
           echo "payload:" > cncidr.txt
@@ -90,6 +91,7 @@ jobs:
         run: |
           echo "payload:" > telegramcidr.txt
           curl -sSL ${telegram_cidr} | perl -ne '/(.+\/\d+)/ && print "  - |$1|\n"' | sed "s/|/'/g" >> telegramcidr.txt
+          cp telegramcidr.txt telegramcidr.yaml
       - name: Generate whitelist.txt file
         run: |
           echo "payload:" > whitelist.txt
@@ -99,10 +101,12 @@ jobs:
         run: |
           echo "payload:" > embycidr.txt
           curl -sSL ${emby_cidr} | perl -ne '/(.+\/\d+)/ && print "  - |$1|\n"' | sed "s/|/'/g" >> embycidr.txt
+          cp embycidr.txt embycidr.yaml
       - name: Generate lancidr.txt file
         run: |
           echo "payload:" > lancidr.txt
           curl -sSL ${lan_cidr} | perl -ne '/(.+\/\d+)/ && print "  - |$1|\n"' | sed "s/|/'/g" >> lancidr.txt
+          cp lancidr.txt lancidr.yaml
       - name: Move files to publish directory
         run: |
           mkdir -p publish
